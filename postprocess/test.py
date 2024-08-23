@@ -1,31 +1,46 @@
-import cv2
 import numpy as np
+from PIL import Image
 
-# 加载图像
-image = cv2.imread('/data1/JM/code/mask2former/postprocess/result/cropped_output_image.png')
-gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+def check_pixels_on_line(image_array, start_point, end_point):
+    x1, y1 = start_point
+    x2, y2 = end_point
+    line_pixels = []
+    # 使用 Bresenham's line algorithm 获取连线上的所有像素
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    sx = 1 if x1 < x2 else -1
+    sy = 1 if y1 < y2 else -1
+    err = dx - dy
 
-# 边缘检测
-edges = cv2.Canny(gray_image, 50, 150)
+    while True:
+        pixel = image_array[y1, x1]
+        if (pixel == [224, 255, 192]).all() or (pixel == [0, 0, 0]).all():
+            return False  # 如果找到不允许的像素，返回False
+        
+        if x1 == x2 and y1 == y2:
+            break
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x1 += sx
+        if e2 < dx:
+            err += dx
+            y1 += sy
 
-# 检测角点（转折点）
-corners = cv2.goodFeaturesToTrack(edges, maxCorners=50, qualityLevel=0.01, minDistance=10)
-corners = np.int0(corners)
+    return True  # 没有找到不允许的像素，返回True
 
-# 绘制转折点
-for corner in corners:
-    x, y = corner.ravel()
-    cv2.circle(image, (x, y), 5, (0, 0, 255), -1)
+def main():
+    image_path = "/data1/JM/code/mask2former/postprocess/result/annotated_output_image.png"
+    image = Image.open(image_path)
+    image_array = np.array(image)
 
-# 检测颜色变化点
-color_change_points = []
-for y in range(1, image.shape[0]-1):
-    for x in range(1, image.shape[1]-1):
-        if edges[y, x] > 0:
-            color_diff = np.linalg.norm(image[y, x] - image[y, x-1])
-            if color_diff > 50:  # 自定义阈值
-                color_change_points.append((x, y))
-                cv2.circle(image, (x, y), 3, (255, 0, 0), -1)
+    start_point = (203, 26)
+    end_point = (250, 78)
 
-# 保存结果
-cv2.imwrite('/data1/JM/code/mask2former/postprocess/polygon_with_points.png', image)
+    if check_pixels_on_line(image_array, start_point, end_point):
+        print("The line does not touch the forbidden pixels.")
+    else:
+        print("The line touches the forbidden pixels.")
+
+if __name__ == "__main__":
+    main()

@@ -90,6 +90,7 @@ class WallWindowDetector:
             processed_points = {}  # Dictionary to track the axes on which each point has been processed
 
             while len(wall_positions) > 0:
+                
                 start_point = wall_positions.pop(0)
                 if start_point not in processed_points:
                     processed_points[start_point] = {'x': False, 'y': False}
@@ -120,13 +121,48 @@ class WallWindowDetector:
                         processed_points[end_point]['y'] = True  # Mark y-axis as processed for end_point
                         y_axis_checked = True  # Stop considering y-axis for this start_point in this loop
                         break  # Break out of the loop after finding a wall on y-axis
-                    
+
+        if 'wall' in self.grouped_data:
+            wall_positions = [pos for pos, color in self.grouped_data['wall']]
+            wall_positions = sorted(wall_positions, key=lambda x: (x[0], x[1]))
+
+            for i in range(len(wall_positions)):
+                start_point = wall_positions[i]
+                
+                for j in range(i + 1, len(wall_positions)):
+                    end_point = wall_positions[j]
+
+                    # 规则1: 检查是否在X轴或Y轴上共线
+                    if self.are_collinear_x_axis(start_point, end_point) or self.are_collinear_y_axis(start_point, end_point):
+                        continue  # 如果共线，跳过这对点
+
+                    # 规则2: 检查连线是否触碰到不允许的像素
+                    if self.check_pixels_on_line(start_point, end_point):
+                        # 如果没有触碰到不允许的像素，认为共线
+                        self.walls.append((start_point, end_point, self.grouped_data['wall'][0][1]))
+
+        ######################################################################################################
+        ######################################################################################################
         if 'windows' in self.grouped_data:
             window_positions = [pos for pos, color in self.grouped_data['windows']]
             window_positions = sorted(window_positions, key=lambda x: (x[0], x[1]))
-            
+
             while len(window_positions) > 1:
-                start_point = window_positions.pop(0)
+                has_collinear = False
+
+                # 先检查是否有共线的点对
+                for i in range(len(window_positions) - 1):
+                    for j in range(i + 1, len(window_positions)):
+                        if self.are_collinear(window_positions[i], window_positions[j]):
+                            has_collinear = True
+                            break
+                    if has_collinear:
+                        break
+                
+                if not has_collinear:  # 如果没有找到共线的点，直接跳出循环
+                    break
+
+                start_point = window_positions.pop(0)  # 这里才开始pop
                 
                 for i, end_point in enumerate(window_positions):
                     if self.are_collinear(start_point, end_point):
@@ -134,6 +170,43 @@ class WallWindowDetector:
                         window_positions.pop(i)
                         break
 
+            while len(window_positions) > 1:
+                start_point = window_positions.pop(0)
+                
+                for i, end_point in enumerate(window_positions):
+                    if self.check_pixels_on_line(start_point, end_point):
+                        self.windows.append((start_point, end_point, self.grouped_data['windows'][0][1]))
+                        window_positions.pop(i)
+                        break
+
+    def check_pixels_on_line(self, start_point, end_point):
+        x1, y1 = start_point
+        x2, y2 = end_point
+        line_pixels = []
+        # Bresenham's line algorithm to get pixels on the line
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = 1 if x1 < x2 else -1
+        sy = 1 if y1 < y2 else -1
+        err = dx - dy
+
+        while True:
+            pixel = self.image_array[y1, x1]
+            if (pixel == [224, 255, 192]).all() or (pixel == [0, 0, 0]).all():
+                return False  # 如果找到不允许的像素，返回False
+            
+            if x1 == x2 and y1 == y2:
+                break
+            e2 = 2 * err
+            if e2 > -dy:
+                err -= dy
+                x1 += sx
+            if e2 < dx:
+                err += dx
+                y1 += sy
+
+        return True  # 没有找到不允许的像素，返回True
+    
     def save_results_to_csv(self, output_csv_path):
         with open(output_csv_path, 'w', newline='') as csvfile:
             fieldnames = ['Type', 'Start_Position', 'End_Position', 'Color']
@@ -172,8 +245,8 @@ class WallWindowDetector:
 # Example usage
 if __name__ == "__main__":
     detector = WallWindowDetector(
-        image_path='/data1/JM/code/mask2former/postprocess/result/cropped_output_image.png',
-        csv_input_path='/data1/JM/code/mask2former/postprocess/result/filtered_corners_info.csv',
+        image_path='/data1/JM/code/mask2former/postprocess/result/annotated_output_image.png',
+        csv_input_path='/data1/JM/code/mask2former/postprocess/result/filtered_corners_info_close_windows.csv',
         output_dir='/data1/JM/code/mask2former/postprocess/result/result',
         forbidden_color=[224, 255, 192],
         tolerance=2
