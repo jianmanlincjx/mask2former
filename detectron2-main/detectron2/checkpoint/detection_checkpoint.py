@@ -35,7 +35,6 @@ class DetectionCheckpointer(Checkpointer):
         assert self._parsed_url_during_load is None
         need_sync = False
         logger = logging.getLogger(__name__)
-        # path = '/data1/JM/code/Mask2Former/pretrain_model/R-50.pkl' if os.path.exists('/data1/JM/code/Mask2Former/pretrain_model/R-50.pkl') else path
         logger.info("[DetectionCheckpointer] Loading from {} ...".format(path))
 
         if path and isinstance(self.model, DistributedDataParallel):

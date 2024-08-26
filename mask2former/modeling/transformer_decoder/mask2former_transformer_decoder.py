@@ -382,8 +382,8 @@ class MultiScaleMaskedTransformerDecoder(nn.Module):
         _, bs, _ = src[0].shape
 
         # QxNxC
-        query_embed = self.query_embed.weight.unsqueeze(1).repeat(1, bs, 1)
-        output = self.query_feat.weight.unsqueeze(1).repeat(1, bs, 1)
+        query_embed = self.query_embed.weight.unsqueeze(1).repeat(1, bs, 1) # 位置编码
+        output = self.query_feat.weight.unsqueeze(1).repeat(1, bs, 1) #  特征
 
         predictions_class = []
         predictions_mask = []
@@ -433,8 +433,11 @@ class MultiScaleMaskedTransformerDecoder(nn.Module):
     def forward_prediction_heads(self, output, mask_features, attn_mask_target_size):
         decoder_output = self.decoder_norm(output)
         decoder_output = decoder_output.transpose(0, 1)
+        # 直接从 query的特征预测类别
         outputs_class = self.class_embed(decoder_output)
+        # 直接从 query的特征预测mask的通道信息
         mask_embed = self.mask_embed(decoder_output)
+        # 获取最终的mask
         outputs_mask = torch.einsum("bqc,bchw->bqhw", mask_embed, mask_features)
 
         # NOTE: prediction is of higher-resolution

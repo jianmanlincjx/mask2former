@@ -1,7 +1,7 @@
 setup.py
-/data1/JM/code/Mask2Former/mask2former/modeling/pixel_decoder/ops/src/vision.cpp
-/data1/JM/code/Mask2Former/mask2former/modeling/pixel_decoder/ops/src/cpu/ms_deform_attn_cpu.cpp
-/data1/JM/code/Mask2Former/mask2former/modeling/pixel_decoder/ops/src/cuda/ms_deform_attn_cuda.cu
+/data1/JM/code/mask2former/mask2former/modeling/pixel_decoder/ops/src/vision.cpp
+/data1/JM/code/mask2former/mask2former/modeling/pixel_decoder/ops/src/cpu/ms_deform_attn_cpu.cpp
+/data1/JM/code/mask2former/mask2former/modeling/pixel_decoder/ops/src/cuda/ms_deform_attn_cuda.cu
 MultiScaleDeformableAttention.egg-info/PKG-INFO
 MultiScaleDeformableAttention.egg-info/SOURCES.txt
 MultiScaleDeformableAttention.egg-info/dependency_links.txt

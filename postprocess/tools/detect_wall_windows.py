@@ -83,6 +83,8 @@ class WallWindowDetector:
         return False
 
     def process_walls_and_windows(self):
+        
+        # 设定规则，识别出X轴或Y轴可以组成墙的配对点
         if 'wall' in self.grouped_data:
             wall_positions = [pos for pos, color in self.grouped_data['wall']]
             wall_positions = sorted(wall_positions, key=lambda x: (x[0], x[1]))
@@ -121,7 +123,8 @@ class WallWindowDetector:
                         processed_points[end_point]['y'] = True  # Mark y-axis as processed for end_point
                         y_axis_checked = True  # Stop considering y-axis for this start_point in this loop
                         break  # Break out of the loop after finding a wall on y-axis
-
+        
+        # 设定规则，识别出斜边可以组成墙的配对点
         if 'wall' in self.grouped_data:
             wall_positions = [pos for pos, color in self.grouped_data['wall']]
             wall_positions = sorted(wall_positions, key=lambda x: (x[0], x[1]))
@@ -143,10 +146,12 @@ class WallWindowDetector:
 
         ######################################################################################################
         ######################################################################################################
+        
         if 'windows' in self.grouped_data:
             window_positions = [pos for pos, color in self.grouped_data['windows']]
             window_positions = sorted(window_positions, key=lambda x: (x[0], x[1]))
-
+            
+            # 设定规则，识别出X轴或Y轴可以组成墙的配对点
             while len(window_positions) > 1:
                 has_collinear = False
 
@@ -169,7 +174,7 @@ class WallWindowDetector:
                         self.windows.append((start_point, end_point, self.grouped_data['windows'][0][1]))
                         window_positions.pop(i)
                         break
-
+            # 设定规则，识别出斜边可以组成墙的配对点
             while len(window_positions) > 1:
                 start_point = window_positions.pop(0)
                 

@@ -106,7 +106,7 @@ Run on multiple machines:
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--config-file", default="/data1/JM/code/Mask2Former/configs/floorplan/maskformer2_R50_bs16_160k.yaml", metavar="FILE", help="path to config file")
+    parser.add_argument("--config-file", default="/data1/JM/code/mask2former/configs/floorplan/maskformer2_R50_bs16_160k.yaml", metavar="FILE", help="path to config file")
     parser.add_argument(
         "--resume",
         action="store_true",

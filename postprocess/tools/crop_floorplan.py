@@ -104,7 +104,7 @@ class FloorplanProcessingPipeline:
 
             for sub_image, img_label in zip([image1, image2], ["windows", "wall"]):
                 gray_image = cv2.cvtColor(sub_image, cv2.COLOR_BGR2GRAY)
-                corners = cv2.goodFeaturesToTrack(gray_image, maxCorners=1000, qualityLevel=0.01, minDistance=1)
+                corners = cv2.goodFeaturesToTrack(gray_image, maxCorners=1000, qualityLevel=0.01, minDistance=0.5)
                 if corners is not None:
                     corners = np.int0(corners)
                     for corner in corners:
@@ -220,20 +220,26 @@ class FloorplanProcessingPipeline:
         cv2.imwrite(output_image_with_text_path, enlarged_image)
 
     def run(self):
+        # 提取房间区域子户型图
         cropped_image_path = self.process_image()
+        # 分割线条，分别提取角点
         csv_output_path = self.extract_subimages(cropped_image_path)
+        # 角点贴回，查看原始角点提取是否全面
         self.annotate_image(csv_output_path, cropped_image_path, save_name='filter-before_annotate_image.png')
+        # 角点过滤，过滤掉重叠的角点
         filtered_csv_path = self.filter_points(csv_output_path)
+        # 角点过滤，因为有些地方线条有点斜，会同时检测出两个偏移量很小的角点，用改规则进行过滤
         filtered_close_windows_csv = self.filter_close_windows(filtered_csv_path)
+        # 角点贴回，看看是否全面
         self.annotate_image(filtered_close_windows_csv, cropped_image_path, save_name='annotated_output_image.png')
 
 # Example usage
 if __name__ == "__main__":
     pipeline = FloorplanProcessingPipeline(
-        image_path="/data1/JM/code/mask2former/datasets/FloorPlan/annotations/training_original/45724345.png",
+        image_path="/data1/JM/code/mask2former/datasets/FloorPlan/annotations/training_original/31852932.png",
         output_dir="/data1/JM/code/mask2former/postprocess/result",
         padding=20,
-        distance_threshold=5,
+        distance_threshold=1.5,
         window_distance_threshold=2
     )
     pipeline.run()

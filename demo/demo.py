@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
 # CUDA_VISIBLE_DEVICES=3 python ./demo/demo.py \
 # --config-file /data1/JM/code/Mask2Former/configs/floorplan/maskformer2_R50_bs16_160k.yaml \
-# --input "/data1/JM/code/Mask2Former/datasets/FloorPlan/images/training/*.png" \
+# --input "/data1/JM/code/Mask2Former/datasets/FloorPlan/images/validation/*.png" \
 # --confidence-threshold 0 --output "/data1/JM/code/Mask2Former/result_floorplan" \
 # --opts MODEL.WEIGHTS /data1/JM/code/Mask2Former/output/model_0004999.pth
 

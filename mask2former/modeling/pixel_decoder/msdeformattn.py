@@ -59,12 +59,15 @@ class MSDeformAttnTransformerEncoderOnly(nn.Module):
         return valid_ratio
 
     def forward(self, srcs, pos_embeds):
+        # 为每个尺度的输出都初始化一个待预测的mask
         masks = [torch.zeros((x.size(0), x.size(2), x.size(3)), device=x.device, dtype=torch.bool) for x in srcs]
         # prepare input for encoder
         src_flatten = []
         mask_flatten = []
         lvl_pos_embed_flatten = []
         spatial_shapes = []
+        # 获取展开后的 features mask_features pos_embeds
+        # 维度分别为 [B, H*W, C] [B, H*W] [B, ] [B, H*W, C]
         for lvl, (src, mask, pos_embed) in enumerate(zip(srcs, masks, pos_embeds)):
             bs, c, h, w = src.shape
             spatial_shape = (h, w)
@@ -313,14 +316,19 @@ class MSDeformAttnPixelDecoder(nn.Module):
 
     @autocast(enabled=False)
     def forward_features(self, features):
+        # features: 来自encoder的多尺度特征
+        # features.keys()：['res2', 'res3', 'res4', 'res5'] 
+        # [16,256,128,128] --> [16, 1024, 16, 16] 
         srcs = []
         pos = []
         # Reverse feature maps into top-down order (from low to high resolution)
+        # 将['res3', 'res4', 'res5']做通道降维，全部降维到256通道
         for idx, f in enumerate(self.transformer_in_features[::-1]):
             x = features[f].float()  # deformable detr does not support half precision
-            srcs.append(self.input_proj[idx](x))
-            pos.append(self.pe_layer(x))
+            srcs.append(self.input_proj[idx](x)) 
+            pos.append(self.pe_layer(x)) # 位置编码
 
+        # y为经过Transform encoder后的特征 | 
         y, spatial_shapes, level_start_index = self.transformer(srcs, pos)
         bs = y.shape[0]
 
@@ -330,16 +338,20 @@ class MSDeformAttnPixelDecoder(nn.Module):
                 split_size_or_sections[i] = level_start_index[i + 1] - level_start_index[i]
             else:
                 split_size_or_sections[i] = y.shape[1] - level_start_index[i]
+
+        # 输入Transform的时候是将所有尺度的H*W concat起来输入的，这一步将其数据结构还原会多尺度特征
         y = torch.split(y, split_size_or_sections, dim=1)
 
         out = []
         multi_scale_features = []
         num_cur_levels = 0
+        # 还原回最初的数据结构
         for i, z in enumerate(y):
             out.append(z.transpose(1, 2).view(bs, -1, spatial_shapes[i][0], spatial_shapes[i][1]))
 
         # append `out` with extra FPN levels
         # Reverse feature maps into top-down order (from low to high resolution)
+        # 对最初没经过Transform的那个尺度的特征进行操作
         for idx, f in enumerate(self.in_features[:self.num_fpn_levels][::-1]):
             x = features[f].float()
             lateral_conv = self.lateral_convs[idx]
@@ -355,4 +367,5 @@ class MSDeformAttnPixelDecoder(nn.Module):
                 multi_scale_features.append(o)
                 num_cur_levels += 1
 
+        # mask_features, transformer_encoder_features, multi_scale_features
         return self.mask_features(out[-1]), out[0], multi_scale_features

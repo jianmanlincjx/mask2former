@@ -22,7 +22,7 @@ import os
 from detectron2.data import DatasetCatalog, MetadataCatalog
 
 import sys
-sys.path.append('/data1/JM/code/Mask2Former/detectron2-main/detectron2/data/datasets')
+sys.path.append('/data1/JM/code/mask2Former/detectron2-main/detectron2/data/datasets')
 
 from detectron2.data.datasets.builtin_meta import ADE20K_SEM_SEG_CATEGORIES, FLOOR_PLAN, _get_builtin_metadata
 from detectron2.data.datasets.cityscapes import load_cityscapes_instances, load_cityscapes_semantic
