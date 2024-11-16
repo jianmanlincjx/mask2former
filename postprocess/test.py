@@ -1,46 +1,26 @@
+import cv2
 import numpy as np
-from PIL import Image
 
-def check_pixels_on_line(image_array, start_point, end_point):
-    x1, y1 = start_point
-    x2, y2 = end_point
-    line_pixels = []
-    # 使用 Bresenham's line algorithm 获取连线上的所有像素
-    dx = abs(x2 - x1)
-    dy = abs(y2 - y1)
-    sx = 1 if x1 < x2 else -1
-    sy = 1 if y1 < y2 else -1
-    err = dx - dy
+# 读取分割图像
+segmentation_map = cv2.imread('segmentation_map.png', cv2.IMREAD_GRAYSCALE)
 
-    while True:
-        pixel = image_array[y1, x1]
-        if (pixel == [224, 255, 192]).all() or (pixel == [0, 0, 0]).all():
-            return False  # 如果找到不允许的像素，返回False
+# 检查图像是否成功读取
+if segmentation_map is None:
+    raise ValueError("图像读取失败，请检查文件路径。")
+
+# 生成热图
+heatmap = cv2.applyColorMap(segmentation_map, cv2.COLORMAP_JET)
+
+# 获取图像的尺寸
+height, width = segmentation_map.shape
+
+# 输出原始灰度值与热图RGB值的对应关系
+for i in range(height):
+    for j in range(width):
+        grayscale_value = segmentation_map[i, j]  # 原始灰度值
+        heatmap_rgb = heatmap[i, j]  # 对应的热图RGB值
         
-        if x1 == x2 and y1 == y2:
-            break
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy
-            x1 += sx
-        if e2 < dx:
-            err += dx
-            y1 += sy
+        # 输出对应关系
+        print(f"位置 ({i}, {j}): 灰度值 = {grayscale_value}, 热图 RGB 值 = {heatmap_rgb}")
 
-    return True  # 没有找到不允许的像素，返回True
-
-def main():
-    image_path = "/data1/JM/code/mask2former/postprocess/result/annotated_output_image.png"
-    image = Image.open(image_path)
-    image_array = np.array(image)
-
-    start_point = (203, 26)
-    end_point = (250, 78)
-
-    if check_pixels_on_line(image_array, start_point, end_point):
-        print("The line does not touch the forbidden pixels.")
-    else:
-        print("The line touches the forbidden pixels.")
-
-if __name__ == "__main__":
-    main()
+# 如果不想输出所有像素的对应关系，可以将上面的遍历范围进行缩小，比如只输出部分像素的对应关系。

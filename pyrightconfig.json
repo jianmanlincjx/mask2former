@@ -1,0 +1,9 @@
+{
+    "exclude": [
+        "my-model",
+        "my-query",
+        "my-component",
+        "my-quant",
+        "my-bond"
+    ]
+}

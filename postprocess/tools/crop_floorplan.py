@@ -27,6 +27,7 @@ class FloorplanProcessingPipeline:
             9: [255, 60, 128],      # extra label for opening (door&window)
             10: [255, 255, 255]     # extra label for wall line
         }
+
         if os.path.exists(self.output_dir):
             os.system(f'rm -rf {self.output_dir}')
         os.makedirs(self.output_dir, exist_ok=True)
@@ -236,7 +237,8 @@ class FloorplanProcessingPipeline:
 # Example usage
 if __name__ == "__main__":
     pipeline = FloorplanProcessingPipeline(
-        image_path="/data1/JM/code/mask2former/datasets/FloorPlan/annotations/training_original/31852932.png",
+        # image_path="/data1/JM/code/mask2former/datasets/FloorPlan/annotations/training_original/31852932.png",
+        image_path="/data1/JM/code/mask2former/postprocess/heatmap_output.png",
         output_dir="/data1/JM/code/mask2former/postprocess/result",
         padding=20,
         distance_threshold=1.5,

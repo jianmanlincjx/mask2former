@@ -113,13 +113,9 @@ class MaskFormerHead(nn.Module):
         }
 
     def forward(self, features, mask=None):
-        # mask: None
         return self.layers(features, mask)
 
     def layers(self, features, mask=None):
-        # features: 来自encoder的多尺度特征
-        # features.keys()：['res2', 'res3', 'res4', 'res5'] 
-        # [16,256,128,128] --> [16, 1024, 16, 16] 
         mask_features, transformer_encoder_features, multi_scale_features = self.pixel_decoder.forward_features(features)
         if self.transformer_in_feature == "multi_scale_pixel_decoder":
             predictions = self.predictor(multi_scale_features, mask_features, mask)

@@ -2,7 +2,7 @@ MODEL:
   BACKBONE:
     FREEZE_AT: 0
     NAME: "build_resnet_backbone"
-  WEIGHTS: "detectron2://ImageNetPretrained/torchvision/R-50.pkl"
+  WEIGHTS: "/data1/JM/code/mask2former/pretrain_model/R-50.pkl"
   PIXEL_MEAN: [123.675, 116.280, 103.530]
   PIXEL_STD: [58.395, 57.120, 57.375]
   RESNETS:
@@ -17,7 +17,7 @@ DATASETS:
   TRAIN: ("ade20k_sem_seg_train",)
   TEST: ("ade20k_sem_seg_val",)
 SOLVER:
-  IMS_PER_BATCH: 16
+  IMS_PER_BATCH: 48
   BASE_LR: 0.0001
   MAX_ITER: 160000
   WARMUP_FACTOR: 1.0
@@ -49,7 +49,7 @@ INPUT:
   FORMAT: "RGB"
   DATASET_MAPPER_NAME: "mask_former_semantic"
 TEST:
-  EVAL_PERIOD: 5000
+  EVAL_PERIOD: 5
   AUG:
     ENABLED: False
     MIN_SIZES: [256, 384, 512, 640, 768, 896]

@@ -15,7 +15,6 @@ def convert(input, output):
     img = img - 1  # 0 (ignore) becomes 255. others are shifted by 1
     Image.fromarray(img).save(output)
 
-
 if __name__ == "__main__":
     
     # # For ADEChallengeData2016
@@ -32,7 +31,7 @@ if __name__ == "__main__":
 
 
     # For ADEChallengeData2016
-    dataset_dir = Path(os.getenv("DETECTRON2_DATASETS", "datasets")) / "FloorPlan"
+    dataset_dir = Path(os.getenv("DETECTRON2_DATASETS", "datasets")) / "annotation_dataset_586_11_black_w_color_1179"
 
     for name in ["training", "validation"]:
         annotation_dir = dataset_dir / "annotations" / name
